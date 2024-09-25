@@ -1,0 +1,6 @@
+@LearnSystem_HostAddress = http://localhost:5066
+
+GET {{LearnSystem_HostAddress}}/swagger/index.html
+Accept: application/json
+
+###
