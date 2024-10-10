@@ -11,7 +11,7 @@ namespace LearnSystem.Services.IServices
 
         Task<ServiceResultBase<bool>> SignInAsync(SignInDto signInDto);
 
-        Task<ServiceResultBase<bool>> OnSite();
+        Task<ServiceResultBase<string>> OnSite();
 
         Task<ServiceResultBase<bool>> SignUpWithTelegram(UserTeleramDTO userTeleramDTO,string telegramData);
         
@@ -20,5 +20,6 @@ namespace LearnSystem.Services.IServices
         Task<ServiceResultBase<bool>> CheckUsername(string username);
 
         Task<ServiceResultBase<bool>> CheckTelegramData(string telegramData);
+        Task<ServiceResultBase<string>> CreateRole(string roleName);
     }
 }

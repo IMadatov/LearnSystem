@@ -9,7 +9,7 @@ public class User : IdentityUser
     public string? LastName { get; set; }
 
     public string? TelegramId { get; set; }
-
+        
     public string? PhotoUrl { get; set; }
 
     public string? Hash { get; set; }
@@ -19,6 +19,10 @@ public class User : IdentityUser
     public string? TelegramUserName {  get; set; }
 
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+
+
+    public string? StatusUserId {  get; set; }
+    public StatusUser? StatusUser { get; set; }
 
 }
 

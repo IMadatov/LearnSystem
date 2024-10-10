@@ -1,15 +1,11 @@
+using LearnSystem;
 using LearnSystem.DbContext;
 using LearnSystem.Models;
 using LearnSystem.Models.ModelsDTO;
 using LearnSystem.Services;
 using LearnSystem.Services.IServices;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddHttpContextAccessor();
+
 
 builder.Services.AddAuthentication()
     .AddCookie(IdentityConstants.ApplicationScheme, opt =>
@@ -28,22 +25,30 @@ builder.Services.AddAuthentication()
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             return Task.CompletedTask;
         };
-
+        opt.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
+        };
         opt.Cookie.SameSite = SameSiteMode.None;
-        //opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.AddAuthorization(opt =>
 {
-    opt.AddPolicy("admin", policy => {
-       
+    opt.AddPolicy("Admin", policy =>
+    {
         policy.RequireRole("admin");
     });
 });
 
+
+
+
 builder.Services.AddIdentityCore<User>()
     .AddRoles<Roles>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddClaimsPrincipalFactory<CustomUserClaimsPrincipalFactory>()
     .AddApiEndpoints();
 
 builder.Services.Configure<IdentityOptions>(option =>
@@ -72,17 +77,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(opt =>
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IAuthService, AuthService>();
 builder.Services.AddTransient<IRoleService, RoleService>();
-
+builder.Services.AddTransient<IAdminService, AdminService>();
+builder.Services.AddTransient<ITelegramService, TelegramService>();
+builder.Services.AddTransient<ITeacherService, TeacherService>();
 
 builder.Services.AddAutoMapper(opt =>
 {
     opt.CreateMap<User, UserDto>().ReverseMap();
-
+    opt.CreateMap<StatusUser, StatusUserDto>().ReverseMap();
+    opt.CreateMap<Subject, SubjectDto>().ReverseMap();
 });
 
 
 builder.Services.AddSwaggerGen();
-
 
 
 builder.Services.AddCors(opt =>
@@ -91,16 +98,12 @@ builder.Services.AddCors(opt =>
 
     opt.AddPolicy("ToGlobal",
         buil => buil
-            .WithOrigins("https://9d57-188-113-250-212.ngrok-free.app").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
+            .WithOrigins("https://cgtlb6bz-4200.euw.devtunnels.ms").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
     opt.AddPolicy("ToLocal",
        buil => buil
            .WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
-
+    
 });
-
-
-
-
 
 
 
@@ -125,10 +128,14 @@ app.UseHttpsRedirection();
 
 
 app.UseCors("ToLocal");
+
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.MapIdentityApi<User>().AllowAnonymous();
+
 app.Run();
 

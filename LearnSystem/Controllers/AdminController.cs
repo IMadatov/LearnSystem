@@ -1,21 +1,23 @@
-﻿using LearnSystem.Services.IServices;
+﻿using LearnSystem.Models.ModelsDTO;
+using LearnSystem.Services.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ServiceStatusResult;
 
 namespace LearnSystem.Controllers
 {
+    [Authorize(Roles ="admin")]
     [ApiController]
     [Route("api/[controller]/[action]")]
-    [Authorize(Roles ="admin")]
     public class AdminController(IAdminService adminService) : ControllerBase
     {
+        [HttpPut]
+        public async Task<ActionResult> UpdateRole(ChangeRoleUserDto changeRoleUserDto)
+            => await FromServiceResultBaseAsync(adminService.UpdateRoleUser(changeRoleUserDto));
 
-        //[HttpGet]
-        //public async Task<ActionResult> GetAllUsers() =>
-        //    await FromServiceResultBaseAsync(adminService.GetUsers());
-
-
+        [HttpDelete]
+        public async Task<ActionResult> DeleteUser([FromBody] string userId)
+            => await FromServiceResultBaseAsync(adminService.DeleteUser(userId));
 
         protected async Task<ActionResult> FromServiceResultBaseAsync<T>(Task<ServiceResultBase<T>> task)
         {

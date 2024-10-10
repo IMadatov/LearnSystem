@@ -19,7 +19,9 @@ public class AuthService(
     UserManager<User> userManager,
     IHttpContextAccessor httpContextAccessor,
     SignInManager<User> signInManager,
-    IConfiguration configuration
+    IConfiguration configuration,
+    ITelegramService telegramService,
+    RoleManager<Roles> roleManager
     ) : IAuthService
 {
     public async Task<ServiceResultBase<bool>> SignUpAsync(SignUpDto signUpDto)
@@ -65,24 +67,28 @@ public class AuthService(
 
 
 
-    public async Task<ServiceResultBase<bool>> OnSite()
+    public async Task<ServiceResultBase<string>> OnSite()
     {
         var userId = httpContextAccessor.HttpContext?.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
 
 
+
         if (userId == null)
         {
-            return new OkServiceResult<bool>(false);
+            return new OkServiceResult<string>("false");
         }
         
-        var user = userManager.FindByIdAsync(userId);
+        var user =await userManager.FindByIdAsync(userId);
 
         if (user == null)
         {
-            return new UnauthorizedServiceResult<bool>(false);
+            return new OkServiceResult<string>("false");
         }
 
-        return new OkServiceResult<bool>(true);
+
+        var role =await userManager.GetRolesAsync(user);
+
+        return new OkServiceResult<string>(role.FirstOrDefault().ToString());
     }
 
 
@@ -112,6 +118,20 @@ public class AuthService(
         if (register != null)
             return new BadRequesServiceResult<bool>("this user is registered", false);
 
+        if(!await telegramService.SendMassage(long.Parse(userTelegram.id), "Hi. User of LMS. I\'m bot for learning system. You should not block the bot. If you block the bot, you won't be able to log in  "))
+        {
+            return new OkServiceResult<bool>("You don't acceptad", false);
+        }
+
+
+        var status = new StatusUser
+        {
+            IsActiveAccount = true,
+            hasPhotoProfile = false,
+            IsOnTelegramBotActive =true
+        };
+
+        _dbContext.StatusUsers.Add(status);
 
 
         var user = new User
@@ -125,23 +145,28 @@ public class AuthService(
             Hash = userTelegram.hash,
             TelegramUserName = userTelegram.username,
             PhotoUrl = userTelegram.photo_url,
-            CreatedAt= DateTime.Now
+            CreatedAt= DateTime.Now,
+            StatusUserId=status.Id            
         };
 
         
+
+
 
         var result = await userManager.CreateAsync(user,userTeleramDTO.Password);
         
         if (result.Succeeded)
         {
 
-            var token = await userManager.CreateSecurityTokenAsync(user);
+            await userManager.AddToRoleAsync(user, "student");
+                await signInManager.SignInAsync(user,true);
+            //var token = await userManager.CreateSecurityTokenAsync(user);
 
             //var loginInfoUser = new UserLoginInfo("Telegram",user.Hash, "");
 
             //var res = await userManager.AddLoginAsync(user, loginInfoUser);
             
-            return new OkServiceResult<bool>(string.Join("", token), true);
+            return new OkServiceResult<bool>(true);
         }
 
 
@@ -208,7 +233,17 @@ public class AuthService(
         return new OkServiceResult<bool>(true);
     }
 
-   
+    public async  Task<ServiceResultBase<string>> CreateRole(string roleName)
+    {
+
+        var role = new Roles
+        {
+            Name = roleName
+        };
+        await roleManager.CreateAsync(role);
+
+        return new OkServiceResult<string>(role.Id);
+    }
 }
 
 

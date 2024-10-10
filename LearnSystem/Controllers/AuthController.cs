@@ -13,6 +13,7 @@ namespace LearnSystem.Controllers
     [Route("api/[controller]/[action]")]
     public class AuthController(IAuthService authService) : ControllerBase
     {
+
         [HttpPost]
         public async Task<ActionResult> SignUp(SignUpDto signUp) =>
             await FromServiceResultBaseAsync(authService.SignUpAsync(signUp));
@@ -22,14 +23,14 @@ namespace LearnSystem.Controllers
             await FromServiceResultBaseAsync(authService.SignOutAsync());
 
         [HttpPost]
-        public async Task<ActionResult> SignInAsync(SignInDto signInDto) =>
-            await FromServiceResultBaseAsync(authService.SignInAsync(signInDto));
+        public async Task<ActionResult> SignInAsync(SignInDto signInDto) { 
+            await Task.Delay(1000);
+            return await FromServiceResultBaseAsync(authService.SignInAsync(signInDto));
+        }
 
         [HttpGet]
-        [Authorize(Roles = "admin123")]
-        public async Task<ActionResult<bool>> OnSite()
+        public async Task<ActionResult> OnSite()
             => await FromServiceResultBaseAsync(authService.OnSite());
-
 
         [HttpPost]
         public async Task<ActionResult> SignUpWithTelegram(UserTeleramDTO userTelegram, string telegramData)
@@ -51,6 +52,9 @@ namespace LearnSystem.Controllers
         [HttpPost]
         public async Task<ActionResult> CheckTelegramData(string telegramData)
             => await FromServiceResultBaseAsync(authService.CheckTelegramData(telegramData));
+
+
+
         protected async Task<ActionResult> FromServiceResultBaseAsync<T>(Task<ServiceResultBase<T>> task)
         {
             var result = await task;

@@ -4,6 +4,7 @@ using LearnSystem.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LearnSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240926053416_addedStatususer")]
+    partial class addedStatususer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,7 +42,7 @@ namespace LearnSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Classes", (string)null);
+                    b.ToTable("Classes");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Journal", b =>
@@ -67,7 +70,7 @@ namespace LearnSystem.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("Journales", (string)null);
+                    b.ToTable("Journales");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Lesson", b =>
@@ -96,17 +99,13 @@ namespace LearnSystem.Migrations
 
                     b.HasIndex("JournalId");
 
-                    b.ToTable("Lessons", (string)null);
+                    b.ToTable("Lessons");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.StatusUser", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool>("IsActiveAccount")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsOnTelegramBotActive")
                         .HasColumnType("bit");
@@ -116,7 +115,7 @@ namespace LearnSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("StatusUsers", (string)null);
+                    b.ToTable("StatusUsers");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Student", b =>
@@ -139,7 +138,7 @@ namespace LearnSystem.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.StudentGrades", b =>
@@ -166,7 +165,7 @@ namespace LearnSystem.Migrations
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("StudentGrades", (string)null);
+                    b.ToTable("StudentGrades");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Subject", b =>
@@ -177,20 +176,12 @@ namespace LearnSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AtCreate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Subjects", (string)null);
+                    b.ToTable("Subjects");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Teacher", b =>
@@ -208,7 +199,7 @@ namespace LearnSystem.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Teachers", (string)null);
+                    b.ToTable("Teachers");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.User", b =>
@@ -465,7 +456,7 @@ namespace LearnSystem.Migrations
 
                     b.HasIndex("TeachersId");
 
-                    b.ToTable("SubjectTeacher", (string)null);
+                    b.ToTable("SubjectTeacher");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Roles", b =>
@@ -545,15 +536,6 @@ namespace LearnSystem.Migrations
                     b.Navigation("Lesson");
 
                     b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("LearnSystem.Models.Subject", b =>
-                {
-                    b.HasOne("LearnSystem.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Teacher", b =>
@@ -659,7 +641,8 @@ namespace LearnSystem.Migrations
 
             modelBuilder.Entity("LearnSystem.Models.StatusUser", b =>
                 {
-                    b.Navigation("User");
+                    b.Navigation("User")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Student", b =>

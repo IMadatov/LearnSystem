@@ -25,6 +25,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<Roles> Roles {  get; set; }
 
+    public DbSet<StatusUser> StatusUsers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder
@@ -50,6 +52,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .HasIndex(x => x.UserName)
             .IsUnique()
             .HasFilter($"{nameof(User.TelegramId)} is not null");
+
+        builder.Entity<StatusUser>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
 
         base.OnModelCreating(builder);
     }
