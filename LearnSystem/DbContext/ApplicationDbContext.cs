@@ -1,14 +1,12 @@
 ﻿using LearnSystem.Models;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace LearnSystem.DbContext;
 
-[AllowAnonymous]
-public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User>(options)
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<User, ApplicationRole, Guid>(options)
 {
-
     public DbSet<Student> Students { get; set; }
 
     public DbSet<Teacher> Teachers { get; set; }    
@@ -23,7 +21,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public DbSet<StudentGrades> StudentGrades { get; set; }
 
-    public DbSet<Roles> Roles {  get; set; }
+    public DbSet<ApplicationRole> Roles {  get; set; }
 
     public DbSet<StatusUser> StatusUsers { get; set; }
 
@@ -56,6 +54,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<StatusUser>()
             .Property(x => x.Id)
             .ValueGeneratedOnAdd();
+
+        builder.Entity<StatusUser>()
+            .HasOne(x => x.User)
+            .WithOne(y => y.StatusUser)
+            .HasForeignKey<StatusUser>(su => su.UserId);
 
         base.OnModelCreating(builder);
     }

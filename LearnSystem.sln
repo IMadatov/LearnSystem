@@ -5,6 +5,16 @@ VisualStudioVersion = 17.11.35208.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LearnSystem", "LearnSystem\LearnSystem.csproj", "{C4316803-C2ED-4BDF-9811-3516093FD608}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BaseCrud", "BaseCrud", "{8A311BC2-1D49-4D39-AF54-EE698E4F632F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaseCrud", "..\BaseCrud\BaseCrud-master\src\BaseCrud\BaseCrud.csproj", "{0E01DC57-A48A-45E7-9DB4-F0324ECC223A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaseCrud.Abstractions", "..\BaseCrud\BaseCrud-master\src\BaseCrud.Abstractions\BaseCrud.Abstractions.csproj", "{1D40D248-A0D8-4424-BC0B-B5D932053DA8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaseCrud.EntityFrameworkCore", "..\BaseCrud\BaseCrud-master\src\BaseCrud.EntityFrameworkCore\BaseCrud.EntityFrameworkCore.csproj", "{869771CF-E9A9-40B3-80DB-3CA371A84153}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaseCrud.PrimeNg", "..\BaseCrud\BaseCrud-master\src\BaseCrud.PrimeNg\BaseCrud.PrimeNg.csproj", "{1DFBDB16-919D-471C-9569-CE3D6A86C342}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +25,31 @@ Global
 		{C4316803-C2ED-4BDF-9811-3516093FD608}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4316803-C2ED-4BDF-9811-3516093FD608}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4316803-C2ED-4BDF-9811-3516093FD608}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E01DC57-A48A-45E7-9DB4-F0324ECC223A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E01DC57-A48A-45E7-9DB4-F0324ECC223A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E01DC57-A48A-45E7-9DB4-F0324ECC223A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E01DC57-A48A-45E7-9DB4-F0324ECC223A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D40D248-A0D8-4424-BC0B-B5D932053DA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D40D248-A0D8-4424-BC0B-B5D932053DA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D40D248-A0D8-4424-BC0B-B5D932053DA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D40D248-A0D8-4424-BC0B-B5D932053DA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{869771CF-E9A9-40B3-80DB-3CA371A84153}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{869771CF-E9A9-40B3-80DB-3CA371A84153}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{869771CF-E9A9-40B3-80DB-3CA371A84153}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{869771CF-E9A9-40B3-80DB-3CA371A84153}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DFBDB16-919D-471C-9569-CE3D6A86C342}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DFBDB16-919D-471C-9569-CE3D6A86C342}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DFBDB16-919D-471C-9569-CE3D6A86C342}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DFBDB16-919D-471C-9569-CE3D6A86C342}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0E01DC57-A48A-45E7-9DB4-F0324ECC223A} = {8A311BC2-1D49-4D39-AF54-EE698E4F632F}
+		{1D40D248-A0D8-4424-BC0B-B5D932053DA8} = {8A311BC2-1D49-4D39-AF54-EE698E4F632F}
+		{869771CF-E9A9-40B3-80DB-3CA371A84153} = {8A311BC2-1D49-4D39-AF54-EE698E4F632F}
+		{1DFBDB16-919D-471C-9569-CE3D6A86C342} = {8A311BC2-1D49-4D39-AF54-EE698E4F632F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {44332C63-E5BE-4E25-8387-BC0BA8E15A19}

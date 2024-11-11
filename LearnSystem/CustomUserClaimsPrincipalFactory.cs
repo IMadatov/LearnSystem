@@ -4,6 +4,6 @@ using Microsoft.Extensions.Options;
 
 namespace LearnSystem;
 
-public class CustomUserClaimsPrincipalFactory(UserManager<User> userManager, RoleManager<Roles> roleManager, IOptions<IdentityOptions> options) : UserClaimsPrincipalFactory<User, Roles>(userManager, roleManager, options)
+public class CustomUserClaimsPrincipalFactory(UserManager<User> userManager, RoleManager<ApplicationRole> roleManager, IOptions<IdentityOptions> options) : UserClaimsPrincipalFactory<User, ApplicationRole>(userManager, roleManager, options)
 {
 }

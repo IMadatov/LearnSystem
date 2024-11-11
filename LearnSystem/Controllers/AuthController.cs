@@ -54,7 +54,9 @@ namespace LearnSystem.Controllers
             => await FromServiceResultBaseAsync(authService.CheckTelegramData(telegramData));
 
 
-
+        [HttpGet]
+        public async Task<ActionResult> ServerTime() =>
+            Ok(DateTime.Now);
         protected async Task<ActionResult> FromServiceResultBaseAsync<T>(Task<ServiceResultBase<T>> task)
         {
             var result = await task;

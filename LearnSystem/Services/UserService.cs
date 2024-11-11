@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BaseCrud.EntityFrameworkCore;
 using LearnSystem.DbContext;
 using LearnSystem.Models;
 using LearnSystem.Models.ModelsDTO;
@@ -15,17 +16,19 @@ public class UserService(
     IHttpContextAccessor _httpContextAccessor,
     UserManager<User> userManager,
     IMapper autoMapper,
-    RoleManager<Roles> roleManager
-    ) : IUserService
+    RoleManager<ApplicationRole> roleManager
+) : BaseCrudService<User, UserDto, UserDto, Guid, Guid>(_context, autoMapper), IUserService
 {
+
+
 
     public async Task<ServiceResultBase<PaginatedList<UserDto>>> GetAdmins(int first, int rows)
     {
         var alladmins = from admin in _context.Users
-                        join status in _context.StatusUsers on admin.StatusUserId equals status.Id
+                        join status in _context.StatusUsers on admin.StatusUser.Id equals status.Id
                         join ur in _context.UserRoles on admin.Id equals ur.UserId
                         join role in _context.Roles on ur.RoleId equals role.Id
-        where role.Name == "admin"
+                        where role.Name == "admin"
                         select new UserDto(autoMapper.Map<UserDto>(admin), autoMapper.Map<StatusUserDto>(status)) { Roles = new List<string> { role.Name } };
 
         var count = alladmins.Count();
@@ -41,7 +44,7 @@ public class UserService(
     public async Task<ServiceResultBase<PaginatedList<UserDto>>> GetStudents(int first, int rows)
     {
         var allStudents = from student in _context.Users
-                          join status in _context.StatusUsers on student.StatusUserId equals status.Id
+                          join status in _context.StatusUsers on student.StatusUser.Id equals status.Id
                           join ur in _context.UserRoles on student.Id equals ur.UserId
                           join role in _context.Roles on ur.RoleId equals role.Id
                           where role.Name == "student"
@@ -59,7 +62,7 @@ public class UserService(
     public async Task<ServiceResultBase<PaginatedList<UserDto>>> GetTeachers(int first, int rows)
     {
         var allTeacher = from teacher in _context.Users
-                         join status in _context.StatusUsers on teacher.StatusUserId equals status.Id
+                         join status in _context.StatusUsers on teacher.StatusUser.Id equals status.Id
                          join ur in _context.UserRoles on teacher.Id equals ur.UserId
                          join role in _context.Roles on ur.RoleId equals role.Id
                          where role.Name == "teacher"
@@ -70,7 +73,7 @@ public class UserService(
         var teachers = await allTeacher.Skip(first).Take(rows).ToListAsync();
 
 
-       
+
 
         var result = new PaginatedList<UserDto>(teachers, count);
 
@@ -84,18 +87,18 @@ public class UserService(
 
         var usersWithRole = from user in _context.Users
                             join status in _context.StatusUsers
-                            on user.StatusUserId equals status.Id
+                            on user.StatusUser.Id equals status.Id
                             join roleUser in _context.UserRoles
                             on user.Id equals roleUser.UserId
                             join role in _context.Roles
                             on roleUser.RoleId equals role.Id
-                            select new UserDto(autoMapper.Map<UserDto>(user), autoMapper.Map<StatusUserDto>(status)) { Roles=new List<string> { role.Name} };
+                            select new UserDto(autoMapper.Map<UserDto>(user), autoMapper.Map<StatusUserDto>(status)) { Roles = new List<string> { role.Name } };
 
 
 
-        var usersDto=await usersWithRole.Skip(first).Take(rows).ToListAsync();
+        var usersDto = await usersWithRole.Skip(first).Take(rows).ToListAsync();
 
-       
+
 
         var result = new PaginatedList<UserDto>(usersDto, count);
 
@@ -115,7 +118,7 @@ public class UserService(
         }
 
         var roles = await userManager.GetRolesAsync(user);
-        var status = await _context.StatusUsers.FirstOrDefaultAsync(x => x.Id == user.StatusUserId);
+        var status = await _context.StatusUsers.FirstOrDefaultAsync(x => x.Id == user.StatusUser.Id);
 
         var userDto = autoMapper.Map<UserDto>(user);
         userDto.Roles = roles;

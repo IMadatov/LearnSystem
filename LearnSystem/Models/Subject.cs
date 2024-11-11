@@ -1,15 +1,17 @@
-﻿namespace LearnSystem.Models;
+﻿using BaseCrud.Abstractions.Entities;
 
-public class Subject
+namespace LearnSystem.Models;
+
+public class Subject : EntityBase
 {
-    public int Id { get; set; }
 
     public string? Name { get; set; }
 
     public DateTime AtCreate { get; set; } = DateTime.Now;
 
-    public string UserId {  get; set; }
-    public User User { get; set; }
+    public User? User { get; set; }
+
+    public Guid? UserId { get; set; }
 
     public ICollection<Journal> Journals { get; set; } = new List<Journal>();
 

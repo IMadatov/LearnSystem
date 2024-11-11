@@ -1,14 +1,15 @@
-﻿namespace LearnSystem.Models;
+﻿using BaseCrud.Abstractions.Entities;
 
-public class Class
+namespace LearnSystem.Models;
+
+public class Class : EntityBase
 {
-    public int Id { get; set; }
 
-    public int Dagree {  get; set; }
+    public int Dagree { get; set; }
 
     public ICollection<Student> Students { get; set; } = new List<Student>();
 
-    public string Name {  get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
 
     public ICollection<Journal> Journals { get; set; } = [];
 }

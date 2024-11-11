@@ -18,9 +18,64 @@ namespace LearnSystem.Services
         IMapper mapper
         ) : ITeacherService
     {
-        public Task<ServiceResultBase<object>> CreateClass()
+        public async Task<ServiceResultBase<bool>> CreateClass(ClassDto classDto)
         {
-            throw new NotImplementedException();
+
+            var UserId = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+            var user = await userManager.FindByIdAsync(UserId);
+            if (classDto == null) { return new BadRequesServiceResult<bool>("ClassDto is null", false); }
+
+            if (classDto.Id != null)
+            {
+                return new BadRequesServiceResult<bool>("Id is not null", false);
+            }
+
+            var classObj = new Class
+            {
+                Name = classDto.Name,
+                Dagree = (int)classDto.Dagree!,
+            };
+
+
+
+            context.Add(classObj);
+
+            await context.SaveChangesAsync();
+
+            var Teacher = await context.Teachers.FirstOrDefaultAsync(x => x.User == user);
+
+
+
+            var journal = new Journal
+            {
+                ClassId = classObj.Id,
+                Teachers = new List<Teacher> { Teacher },
+
+            };
+
+            context.Journales.Add(journal);
+
+            await context.SaveChangesAsync();
+
+
+
+            return new OkServiceResult<bool>(true);
+        }
+
+        public async Task<ServiceResultBase<bool>> DeleteClasses(List<int> ids)
+        {
+            var userId = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)!.Value;
+
+            var user = await userManager.FindByIdAsync(userId);
+
+            var deleteClassL = context.Classes.Where(x =>ids.Contains(x.Id));
+
+            var deleteClassList =await deleteClassL.Where(x => x.CreatedBy == user.Id.ToString()).ToListAsync();
+
+            context.Classes.RemoveRange(deleteClassList);
+
+            await context.SaveChangesAsync();
+            return new OkServiceResult<bool>(true);
         }
 
         public async Task<ServiceResultBase<bool>> CreateSubject(SubjectDto createSubjectDto)
@@ -28,12 +83,20 @@ namespace LearnSystem.Services
 
             var UserId = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
 
-            createSubjectDto.UserId=UserId;
+            createSubjectDto.UserId = UserId;
 
-            var subject = new Subject { 
+            var subject = new Subject
+            {
                 Name = createSubjectDto.Name,
-                UserId=UserId,
+                User= new User { Id = Guid.Parse(UserId) }
             };
+
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == Guid.Parse(UserId));
+
+            var teacher = new Teacher { User = user! };
+
+            context.Teachers.Add(teacher);
+
             context.Add(subject);
 
             await context.SaveChangesAsync();
@@ -41,7 +104,7 @@ namespace LearnSystem.Services
             return new OkServiceResult<bool>(true);
         }
 
-        public async Task<ServiceResultBase<PaginatedList<SubjectDto>>> GetSubjects(int first,int row,string field,short order)
+        public async Task<ServiceResultBase<PaginatedList<SubjectDto>>> GetSubjects(int first, int row, string field, short order)
         {
             var query = context.Subjects.AsQueryable();
             var property = typeof(Subject).GetProperty(field);
@@ -49,11 +112,11 @@ namespace LearnSystem.Services
             if (property != null)
             {
                 ParameterExpression p = Expression.Parameter(typeof(Subject), "x");
-                
+
                 var propertyAccess = Expression.MakeMemberAccess(p, property);
 
                 var lambda = Expression.Lambda<Func<Subject, object>>(propertyAccess, p);
-                
+
                 //var orderByNullLambda = Expression.Lambda(
                 //      Expression.Equal(propertyAccess, Expression.Constant(null)),
                 //      p);
@@ -81,7 +144,7 @@ namespace LearnSystem.Services
 
 
 
-            var subjects =await allSubjects.Skip(first).Take(row).ToListAsync();
+            var subjects = await allSubjects.Skip(first).Take(row).ToListAsync();
 
             var count = context.Subjects.Count();
 
@@ -89,13 +152,30 @@ namespace LearnSystem.Services
 
 
             var result = new PaginatedList<SubjectDto>(mapper.Map<List<SubjectDto>>(subjects), count);
-           
+
             return new OkServiceResult<PaginatedList<SubjectDto>>(result);
         }
 
-        public async Task<ServiceResultBase<List<UserDto>>> GetAllStudents()
+        public async Task<ServiceResultBase<List<UserDto>>> GetAllStudents(int first, int row, string field, short order)
         {
-            var students = userManager.GetUsersInRoleAsync("teacher");
+
+            var studentsContext = context.Students.AsQueryable();
+            var property = typeof(Student).GetProperty(field);
+            if (property != null)
+            {
+                ParameterExpression p = Expression.Parameter(typeof(Student), "x");
+
+                var propertyAccess = Expression.MakeMemberAccess(p, property);
+
+                var lambda = Expression.Lambda<Func<Student, object>>(propertyAccess, p);
+
+                if (order == -1)
+                {
+                    studentsContext = studentsContext.OrderByDescending(lambda);
+                }
+                else studentsContext = studentsContext.OrderBy(lambda);
+            }
+            var students = studentsContext.Skip(first).Take(row);
 
             var studentsDto = mapper.Map<List<UserDto>>(students);
 
@@ -108,7 +188,7 @@ namespace LearnSystem.Services
 
 
             var filteredMySubject = subjectDtos.Where(x => x.UserId == userId);
-            if (filteredMySubject.Count()== 0)
+            if (filteredMySubject.Count() == 0)
             {
                 return new OkServiceResult<bool>(false);
             }
@@ -117,6 +197,30 @@ namespace LearnSystem.Services
             await context.SaveChangesAsync();
 
             return new OkServiceResult<bool>(true);
+        }
+
+        public async Task<ServiceResultBase<PaginatedList<ClassDto>>> GetAllClass(int first, int row, string field, short order)
+        {
+            var query = context.Classes.AsQueryable();
+
+            var property = typeof(Class).GetProperty(field);
+
+            if (property != null)
+            {
+                ParameterExpression p = Expression.Parameter(typeof(Class), "x");
+                var propertyAccess = Expression.MakeMemberAccess(p, property);
+
+                var lambda = Expression.Lambda<Func<Class, object>>(propertyAccess, p);
+
+                if (order == -1) query = query.OrderByDescending(lambda);
+                else query = query.OrderBy(lambda);
+            }
+
+            var classes = await query.Skip(first).Take(row).ToListAsync();
+
+            var result = new PaginatedList<ClassDto>(mapper.Map<List<ClassDto>>(classes), context.Classes.Count());
+
+            return new OkServiceResult<PaginatedList<ClassDto>>(result);
         }
     }
 }

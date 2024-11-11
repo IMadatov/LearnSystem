@@ -20,6 +20,6 @@ namespace LearnSystem.Services.IServices
         Task<ServiceResultBase<bool>> CheckUsername(string username);
 
         Task<ServiceResultBase<bool>> CheckTelegramData(string telegramData);
-        Task<ServiceResultBase<string>> CreateRole(string roleName);
+        Task<ServiceResultBase<Guid>> CreateRole(string roleName);
     }
 }

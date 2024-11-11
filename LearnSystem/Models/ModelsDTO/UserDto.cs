@@ -1,13 +1,15 @@
-﻿namespace LearnSystem.Models.ModelsDTO
+﻿using BaseCrud.Entities;
+
+namespace LearnSystem.Models.ModelsDTO
 {
-    public class UserDto
+    public class UserDto : IDataTransferObject<User, Guid>
     {
 
-        public UserDto(){}
+        public UserDto() { }
 
-        public UserDto(UserDto userDto,StatusUserDto statusUserDto)
+        public UserDto(UserDto userDto, StatusUserDto statusUserDto)
         {
-            Status=statusUserDto;
+            Status = statusUserDto;
             Id = userDto.Id;
             TelegramId = userDto.TelegramId;
             UserName = userDto.UserName;
@@ -30,7 +32,7 @@
             Id = userDto.Id;
             TelegramId = userDto.TelegramId;
             UserName = userDto.UserName;
-            Email = userDto.Email;  
+            Email = userDto.Email;
             FirstName = userDto.FirstName;
             LastName = userDto.LastName;
             PhotoUrl = userDto.PhotoUrl;
@@ -42,17 +44,17 @@
 
         public string Id { get; set; }
         public string TelegramId { get; set; }
-        public string UserName {  get;set; }
-        public string Email {  get;set; }
-        public string FirstName {  get;set; }
-        public string LastName {  get;set; }
-        public string PhotoUrl {  get;set; }
-        public string TelegramUserName {  get;set; }
-        public DateTime ?CreatedAt {  get;set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string PhotoUrl { get; set; }
+        public string TelegramUserName { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
 
-        public StatusUserDto? Status {  get;set; }
+        public StatusUserDto? Status { get; set; }
 
-        public IList<string> Roles {  get;set; }
+        public IList<string> Roles { get; set; }
     }
 }

@@ -21,7 +21,7 @@ public class AuthService(
     SignInManager<User> signInManager,
     IConfiguration configuration,
     ITelegramService telegramService,
-    RoleManager<Roles> roleManager
+    RoleManager<ApplicationRole> roleManager
     ) : IAuthService
 {
     public async Task<ServiceResultBase<bool>> SignUpAsync(SignUpDto signUpDto)
@@ -59,7 +59,7 @@ public class AuthService(
 
         if (result.Succeeded)
         {
-            
+
             return new OkServiceResult<bool>(true);
         }
         return new BadRequesServiceResult<bool>(false);
@@ -77,8 +77,8 @@ public class AuthService(
         {
             return new OkServiceResult<string>("false");
         }
-        
-        var user =await userManager.FindByIdAsync(userId);
+
+        var user = await userManager.FindByIdAsync(userId);
 
         if (user == null)
         {
@@ -86,7 +86,7 @@ public class AuthService(
         }
 
 
-        var role =await userManager.GetRolesAsync(user);
+        var role = await userManager.GetRolesAsync(user);
 
         return new OkServiceResult<string>(role.FirstOrDefault().ToString());
     }
@@ -103,7 +103,7 @@ public class AuthService(
     }
 
 
-    public async Task<ServiceResultBase<bool>> SignUpWithTelegram(UserTeleramDTO userTeleramDTO,string telegramData)
+    public async Task<ServiceResultBase<bool>> SignUpWithTelegram(UserTeleramDTO userTeleramDTO, string telegramData)
     {
 
         var dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(telegramData);
@@ -113,12 +113,12 @@ public class AuthService(
         if (!await CheckAuthorizeFromBot(dictionary))
             return new BadRequesServiceResult<bool>("User is not authorize from bot still");
 
-        var register = await userManager.Users.FirstOrDefaultAsync(x=>x.TelegramId == userTelegram.id);
+        var register = await userManager.Users.FirstOrDefaultAsync(x => x.TelegramId == userTelegram.id);
 
         if (register != null)
             return new BadRequesServiceResult<bool>("this user is registered", false);
 
-        if(!await telegramService.SendMassage(long.Parse(userTelegram.id), "Hi. User of LMS. I\'m bot for learning system. You should not block the bot. If you block the bot, you won't be able to log in  "))
+        if (!await telegramService.SendMassage(long.Parse(userTelegram.id), "Hi. User of LMS. I\'m bot for learning system. You should not block the bot. If you block the bot, you won't be able to log in  "))
         {
             return new OkServiceResult<bool>("You don't acceptad", false);
         }
@@ -126,9 +126,8 @@ public class AuthService(
 
         var status = new StatusUser
         {
-            IsActiveAccount = true,
-            hasPhotoProfile = false,
-            IsOnTelegramBotActive =true
+            HasPhotoProfile = false,
+            IsOnTelegramBotActive = true
         };
 
         _dbContext.StatusUsers.Add(status);
@@ -136,8 +135,8 @@ public class AuthService(
 
         var user = new User
         {
-            UserName=userTeleramDTO.UserName,
-            Email=userTeleramDTO.Email,
+            UserName = userTeleramDTO.UserName,
+            Email = userTeleramDTO.Email,
             FirstName = userTelegram.first_name,
             LastName = userTelegram.last_name,
             AuthDate = userTelegram.auth_date,
@@ -145,33 +144,39 @@ public class AuthService(
             Hash = userTelegram.hash,
             TelegramUserName = userTelegram.username,
             PhotoUrl = userTelegram.photo_url,
-            CreatedAt= DateTime.Now,
-            StatusUserId=status.Id            
+            StatusUser = new StatusUser { Id = status.Id }
         };
 
-        
 
 
 
-        var result = await userManager.CreateAsync(user,userTeleramDTO.Password);
-        
+
+        var result = await userManager.CreateAsync(user, userTeleramDTO.Password);
+        var countUser = _dbContext.Users.Count();
         if (result.Succeeded)
         {
 
-            await userManager.AddToRoleAsync(user, "student");
-                await signInManager.SignInAsync(user,true);
+            if (countUser < 4)
+            {
+                await userManager.AddToRoleAsync(user, "admin");
+            }
+
+            else
+                await userManager.AddToRoleAsync(user, "student");
+
+            await signInManager.SignInAsync(user, true);
             //var token = await userManager.CreateSecurityTokenAsync(user);
 
             //var loginInfoUser = new UserLoginInfo("Telegram",user.Hash, "");
 
             //var res = await userManager.AddLoginAsync(user, loginInfoUser);
-            
+
             return new OkServiceResult<bool>(true);
         }
 
 
 
-        return new BadRequesServiceResult<bool>(string.Join(Environment.NewLine,result.Errors.Select(x=>x.Description)), false);
+        return new BadRequesServiceResult<bool>(string.Join(Environment.NewLine, result.Errors.Select(x => x.Description)), false);
 
     }
 
@@ -183,14 +188,14 @@ public class AuthService(
 
         UserTelegram userTelegram = Newtonsoft.Json.JsonConvert.DeserializeObject<UserTelegram>(telegramData);
 
-        var user = await userManager.Users.FirstOrDefaultAsync(x=>x.TelegramId==userTelegram!.id);
+        var user = await userManager.Users.FirstOrDefaultAsync(x => x.TelegramId == userTelegram!.id);
 
         if (user == null)
-            return new UnauthorizedServiceResult<bool>("You should be SignUp",false);
+            return new UnauthorizedServiceResult<bool>("You should be SignUp", false);
 
-        await signInManager.SignInAsync(user,true);
+        await signInManager.SignInAsync(user, true);
 
-        
+
 
         return new OkServiceResult<bool>(true);
     }
@@ -233,16 +238,16 @@ public class AuthService(
         return new OkServiceResult<bool>(true);
     }
 
-    public async  Task<ServiceResultBase<string>> CreateRole(string roleName)
+    public async Task<ServiceResultBase<Guid>> CreateRole(string roleName)
     {
 
-        var role = new Roles
+        var role = new ApplicationRole
         {
             Name = roleName
         };
         await roleManager.CreateAsync(role);
 
-        return new OkServiceResult<string>(role.Id);
+        return new OkServiceResult<Guid>(role.Id);
     }
 }
 

@@ -1,16 +1,14 @@
-﻿namespace LearnSystem.Models;
+﻿using BaseCrud.Abstractions.Entities;
 
+namespace LearnSystem.Models;
 
-public class StatusUser
+public class StatusUser : EntityBase<Guid>
 {
-
-    public string Id { get; set; }
-
     public bool IsOnTelegramBotActive { get; set; }
 
-    public bool IsActiveAccount { get; set; }
-
-    public bool hasPhotoProfile { get; set; }
+    public bool HasPhotoProfile { get; set; }
 
     public User? User { get; set; }
+
+    public Guid? UserId { get; set; }
 }

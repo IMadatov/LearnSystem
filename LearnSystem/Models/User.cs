@@ -1,29 +1,35 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using BaseCrud.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace LearnSystem.Models;
 
-public class User : IdentityUser
+public class User : IdentityUser<Guid>, IEntity<Guid>
 {
     public string? FirstName { get; set; }
 
     public string? LastName { get; set; }
 
     public string? TelegramId { get; set; }
-        
+
     public string? PhotoUrl { get; set; }
 
     public string? Hash { get; set; }
 
-    public string? AuthDate {  get; set; }
+    public string? AuthDate { get; set; }
 
-    public string? TelegramUserName {  get; set; }
+    public string? TelegramUserName { get; set; }
 
-    public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
-
-
-    public string? StatusUserId {  get; set; }
     public StatusUser? StatusUser { get; set; }
 
+    public bool Active { get; set; }
+    
+    public string? CreatedBy { get; set; }
+    
+    public DateTime? CreatedDate { get; set; }
+    
+    public string? LastModifiedBy { get; set; }
+    
+    public DateTime? LastModifiedDate { get; set; }
 }
 
 

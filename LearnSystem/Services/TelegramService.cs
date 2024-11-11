@@ -51,7 +51,7 @@ public class TelegramService : ITelegramService
         {
             userStatus = new StatusUser
             {
-                hasPhotoProfile = true,
+                HasPhotoProfile = true,
                 IsOnTelegramBotActive = true
             };
             _context.StatusUsers.Add(userStatus);
@@ -59,7 +59,7 @@ public class TelegramService : ITelegramService
 
         var userFromDb = await _context.Users.FirstOrDefaultAsync(x => x.TelegramId == user.TelegramId);
 
-        userFromDb.StatusUserId = userStatus.Id;
+        userFromDb.StatusUser.Id = userStatus.Id;
 
         await _context.SaveChangesAsync();
 
@@ -103,20 +103,20 @@ public class TelegramService : ITelegramService
 
         var chatId = new Telegram.Bot.Types.ChatId(userTelegramId);
 
-        var statusUser = await _context.StatusUsers.FirstOrDefaultAsync(x => x.Id == user.StatusUserId);
+        var statusUser = await _context.StatusUsers.FirstOrDefaultAsync(x => x.Id == user.StatusUser.Id);
 
         if (statusUser == null)
         {
             statusUser = new StatusUser
             {
-                hasPhotoProfile = false,
-                IsActiveAccount = false,
+                HasPhotoProfile = false,
+                //IsActiveAccount = false,
                 IsOnTelegramBotActive = false
             };
 
             _context.StatusUsers.Add(statusUser);
 
-            user.StatusUserId = statusUser.Id;
+            user.StatusUser.Id = statusUser.Id;
 
             _context.Entry(user).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -134,15 +134,15 @@ public class TelegramService : ITelegramService
 
             statusUser.IsOnTelegramBotActive = true;
 
-            statusUser.hasPhotoProfile = true;
+            statusUser.HasPhotoProfile = true;
             if (chat.Photo == null)
             {
-                statusUser.hasPhotoProfile = false;
+                statusUser.HasPhotoProfile = false;
             }
         }
         catch (Exception e)
         {
-            statusUser.hasPhotoProfile = false;
+            statusUser.HasPhotoProfile = false;
 
             statusUser.IsOnTelegramBotActive = false;
 

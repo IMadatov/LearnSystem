@@ -1,19 +1,23 @@
+using BaseCrud;
 using LearnSystem;
+using LearnSystem.BackgroundServices;
 using LearnSystem.DbContext;
 using LearnSystem.Models;
 using LearnSystem.Models.ModelsDTO;
 using LearnSystem.Services;
 using LearnSystem.Services.IServices;
+using LearnSystem.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-
+builder.Services.AddSignalR();
 builder.Services.AddHttpContextAccessor();
-
+builder.Services.AddHostedService<ServiceTimeService>();
 
 builder.Services.AddAuthentication()
     .AddCookie(IdentityConstants.ApplicationScheme, opt =>
@@ -46,7 +50,7 @@ builder.Services.AddAuthorization(opt =>
 
 
 builder.Services.AddIdentityCore<User>()
-    .AddRoles<Roles>()
+    .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddClaimsPrincipalFactory<CustomUserClaimsPrincipalFactory>()
     .AddApiEndpoints();
@@ -86,16 +90,20 @@ builder.Services.AddAutoMapper(opt =>
     opt.CreateMap<User, UserDto>().ReverseMap();
     opt.CreateMap<StatusUser, StatusUserDto>().ReverseMap();
     opt.CreateMap<Subject, SubjectDto>().ReverseMap();
+    opt.CreateMap<Class,ClassDto>().ReverseMap();
 });
 
 
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(x =>
+{
+    x.AddSignalRSwaggerGen();
+});
 
 
 builder.Services.AddCors(opt =>
 {
     //opt.AddPolicy("AllowAll", buil => buil.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-
+        
     opt.AddPolicy("ToGlobal",
         buil => buil
             .WithOrigins("https://cgtlb6bz-4200.euw.devtunnels.ms").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
@@ -104,12 +112,6 @@ builder.Services.AddCors(opt =>
            .WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials());
     
 });
-
-
-
-
-
-
 
 
 
@@ -133,9 +135,10 @@ app.UseAuthentication();
 
 app.UseAuthorization();
 
+app.MapHub<LearnSystemSignalRHub>("/signalR");
+
 app.MapControllers();
 
-app.MapIdentityApi<User>().AllowAnonymous();
 
 app.Run();
 

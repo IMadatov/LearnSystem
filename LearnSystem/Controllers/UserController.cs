@@ -1,17 +1,21 @@
 ﻿using LearnSystem.Services;
 using LearnSystem.Services.IServices;
+using LearnSystem.SignalR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using ServiceStatusResult;
 using System.Security.Claims;
 
 namespace LearnSystem.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]/[action]")]
+    
     [Authorize]
-    public class UserController(IUserService userService) : ControllerBase
+    public class UserController(
+        IUserService userService,
+        IHubContext<LearnSystemSignalRHub, ISignalHubClient> hubContext
+        ) : BaseController
     {
 
         [HttpGet]

@@ -15,9 +15,9 @@ public class RoleController(IRoleService roleService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult> MyRoles()
     {
-        var id = HttpContext.User.Claims.FirstOrDefault(x=>x.Type==ClaimTypes.NameIdentifier).Value;
+        var id = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
 
-        return await FromServiceResultBaseAsync(roleService.MyRoles(id));  
+        return await FromServiceResultBaseAsync(roleService.MyRoles(id));
     }
 
     [HttpPost]
@@ -31,10 +31,9 @@ public class RoleController(IRoleService roleService) : ControllerBase
         => await FromServiceResultBaseAsync(roleService.GetAllRoles());
 
     [HttpPost]
-    public async Task<ActionResult> AddUserToRole(ToRoleDto toRoleDto)
-    {
-        return await FromServiceResultBaseAsync(roleService.AddUserToRole(toRoleDto));
-    }
+    public async Task<ActionResult> AddUserToRole(ToRoleDto toRoleDto) =>
+        await FromServiceResultBaseAsync(roleService.AddUserToRole(toRoleDto));
+
     protected async Task<ActionResult> FromServiceResultBaseAsync<T>(Task<ServiceResultBase<T>> task)
     {
         var result = await task;

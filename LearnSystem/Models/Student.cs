@@ -1,10 +1,12 @@
-﻿namespace LearnSystem.Models;
+﻿using BaseCrud.Abstractions.Entities;
 
-public class Student
+namespace LearnSystem.Models;
+
+public class Student : EntityBase
 {
-    public int Id { get; set; }
-
     public User? User { get; set; }
+
+    public Guid UserId { get; set; }
 
     public int ClassId { get; set; }
 
