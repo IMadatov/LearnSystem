@@ -2,10 +2,10 @@
 
 namespace LearnSystem.Models
 {
-    public class UserProfile : IUserProfile
+    public class UserProfile : IUserProfile<Guid>
     {
-        public int Id { get ; set ; }
         public string? UserName { get ; set ; }
         public string? Fullname { get ; set ; }
+        public Guid Id { get ; set ; }
     }
 }

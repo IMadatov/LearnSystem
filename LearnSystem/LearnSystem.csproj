@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BaseCrud\BaseCrud-master\src\BaseCrud.EntityFrameworkCore\BaseCrud.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\BaseCrud\BaseCrud-master\src\BaseCrud.PrimeNg\BaseCrud.PrimeNg.csproj" />
   </ItemGroup>
 
   <ItemGroup>

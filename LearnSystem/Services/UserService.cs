@@ -17,100 +17,14 @@ public class UserService(
     UserManager<User> userManager,
     IMapper autoMapper,
     RoleManager<ApplicationRole> roleManager
-) : BaseCrudService<User, UserDto, UserDto, Guid, Guid>(_context, autoMapper), IUserService
+) : IUserService
 {
-
-
-
-    public async Task<ServiceResultBase<PaginatedList<UserDto>>> GetAdmins(int first, int rows)
-    {
-        var alladmins = from admin in _context.Users
-                        join status in _context.StatusUsers on admin.StatusUser.Id equals status.Id
-                        join ur in _context.UserRoles on admin.Id equals ur.UserId
-                        join role in _context.Roles on ur.RoleId equals role.Id
-                        where role.Name == "admin"
-                        select new UserDto(autoMapper.Map<UserDto>(admin), autoMapper.Map<StatusUserDto>(status)) { Roles = new List<string> { role.Name } };
-
-        var count = alladmins.Count();
-
-        var admins = await alladmins.Skip(first).Take(rows).ToListAsync();
-
-
-        var results = new PaginatedList<UserDto>(admins, count);
-
-        return new OkServiceResult<PaginatedList<UserDto>>(results);
-    }
-
-    public async Task<ServiceResultBase<PaginatedList<UserDto>>> GetStudents(int first, int rows)
-    {
-        var allStudents = from student in _context.Users
-                          join status in _context.StatusUsers on student.StatusUser.Id equals status.Id
-                          join ur in _context.UserRoles on student.Id equals ur.UserId
-                          join role in _context.Roles on ur.RoleId equals role.Id
-                          where role.Name == "student"
-                          select new UserDto(autoMapper.Map<UserDto>(student), autoMapper.Map<StatusUserDto>(status)) { Roles = new List<string> { role.Name } };
-
-        var count = allStudents.Count();
-
-        var students = await allStudents.Skip(first).Take(rows).ToListAsync();
-
-        var result = new PaginatedList<UserDto>(students, count);
-
-        return new OkServiceResult<PaginatedList<UserDto>>(result);
-    }
-
-    public async Task<ServiceResultBase<PaginatedList<UserDto>>> GetTeachers(int first, int rows)
-    {
-        var allTeacher = from teacher in _context.Users
-                         join status in _context.StatusUsers on teacher.StatusUser.Id equals status.Id
-                         join ur in _context.UserRoles on teacher.Id equals ur.UserId
-                         join role in _context.Roles on ur.RoleId equals role.Id
-                         where role.Name == "teacher"
-                         select new UserDto(autoMapper.Map<UserDto>(teacher), autoMapper.Map<StatusUserDto>(status)) { Roles = new List<string> { role.Name } }; ;
-
-        var count = allTeacher.Count();
-
-        var teachers = await allTeacher.Skip(first).Take(rows).ToListAsync();
-
-
-
-
-        var result = new PaginatedList<UserDto>(teachers, count);
-
-        return new OkServiceResult<PaginatedList<UserDto>>(result);
-    }
-
-    public async Task<ServiceResultBase<PaginatedList<UserDto>>> GetUsers(int first, int rows)
+    public async Task<ServiceResultBase<UserDto>> Me(Guid userId)
     {
 
-        var count = _context.Users.Count();
+        var user = await userManager.FindByIdAsync(userId.ToString());
 
-        var usersWithRole = from user in _context.Users
-                            join status in _context.StatusUsers
-                            on user.StatusUser.Id equals status.Id
-                            join roleUser in _context.UserRoles
-                            on user.Id equals roleUser.UserId
-                            join role in _context.Roles
-                            on roleUser.RoleId equals role.Id
-                            select new UserDto(autoMapper.Map<UserDto>(user), autoMapper.Map<StatusUserDto>(status)) { Roles = new List<string> { role.Name } };
-
-
-
-        var usersDto = await usersWithRole.Skip(first).Take(rows).ToListAsync();
-
-
-
-        var result = new PaginatedList<UserDto>(usersDto, count);
-
-        return new OkServiceResult<PaginatedList<UserDto>>(result);
-
-    }
-
-    public async Task<ServiceResultBase<UserDto>> Me(string userId)
-    {
-
-        var user = await userManager.FindByIdAsync(userId);
-
+        user = await _context.Users.Include(x => x.StatusUser).FirstOrDefaultAsync(x => x.Id == user.Id);
 
         if (user == null)
         {
@@ -118,11 +32,11 @@ public class UserService(
         }
 
         var roles = await userManager.GetRolesAsync(user);
-        var status = await _context.StatusUsers.FirstOrDefaultAsync(x => x.Id == user.StatusUser.Id);
+        var status = user.StatusUser;
 
         var userDto = autoMapper.Map<UserDto>(user);
         userDto.Roles = roles;
-        userDto.Status = autoMapper.Map<StatusUserDto>(status);
+        userDto.StatusUser = autoMapper.Map<StatusUserDto>(status);
 
         return new OkServiceResult<UserDto>("profile", userDto);
     }

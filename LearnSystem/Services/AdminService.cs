@@ -120,11 +120,17 @@ public class AdminService(
     {
         var roleFromDb = await roleManager.GetRoleNameAsync(new ApplicationRole { Name = roleUserDto.Role });
 
-        var user = await userManager.FindByIdAsync(roleUserDto.UserId);
+        var user = await _context.Users.Include(x => x.StatusUser).FirstOrDefaultAsync(x=>x.Id==roleUserDto.UserId) ;
 
         var roles = await userManager.GetRolesAsync(user);
 
         await userManager.RemoveFromRolesAsync(user, roles);
+
+        user.Active = roleUserDto.AccountStatus;
+
+        _context.Users.Entry(user).State = EntityState.Modified;
+
+        await _context.SaveChangesAsync();
 
         var result = await userManager.AddToRoleAsync(user, roleFromDb);
 
@@ -135,11 +141,11 @@ public class AdminService(
             await RegrularationRoleAsync(roles.FirstOrDefault()!, roleFromDb, user);
 
 
-            var statusUser = await _context.StatusUsers.FirstOrDefaultAsync(x => x.Id == user.StatusUser.Id);
+            //var statusUser = user.StatusUser;
 
-            //statusUser.IsActiveAccount = roleUserDto.AccountStatus;
+            ////statusUser.IsActiveAccount = roleUserDto.AccountStatus;
 
-            _context.Entry(statusUser).State = EntityState.Modified;
+            //_context.Entry(statusUser).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
 

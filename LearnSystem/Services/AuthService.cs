@@ -31,7 +31,8 @@ public class AuthService(
             Email = signUpDto.Email,
             FirstName = signUpDto.FirstName,
             LastName = signUpDto.LastName,
-            UserName = signUpDto.UserName
+            UserName = signUpDto.UserName,
+            CreatedDate = DateTime.Now
         };
 
         var result = await userManager.CreateAsync(user, signUpDto.Password!);
@@ -133,6 +134,7 @@ public class AuthService(
         _dbContext.StatusUsers.Add(status);
 
 
+
         var user = new User
         {
             UserName = userTeleramDTO.UserName,
@@ -144,7 +146,8 @@ public class AuthService(
             Hash = userTelegram.hash,
             TelegramUserName = userTelegram.username,
             PhotoUrl = userTelegram.photo_url,
-            StatusUser = new StatusUser { Id = status.Id }
+            StatusUser = status,
+            CreatedDate = DateTime.Now
         };
 
 
@@ -156,8 +159,31 @@ public class AuthService(
         if (result.Succeeded)
         {
 
+
+
             if (countUser < 4)
             {
+                var rolesFromDb = await _dbContext.Roles.ToListAsync();
+
+
+                if (rolesFromDb.Count == 0)
+                {
+                    var roles = new List<ApplicationRole> {
+                        new ApplicationRole { Name="admin" },
+                        new ApplicationRole { Name = "student" },
+                        new ApplicationRole { Name = "teacher" }
+                    };
+
+                    foreach (var role in roles)
+                    {
+                        await roleManager.CreateAsync(role);
+                    }
+                }
+
+
+
+
+
                 await userManager.AddToRoleAsync(user, "admin");
             }
 

@@ -6,10 +6,9 @@ using ServiceStatusResult;
 
 namespace LearnSystem.Controllers
 {
-    [ApiController]
-    [Route("telegram/[controller]/[action]")]
     [Authorize]
-    public class TelegramBotController(ITelegramService telegramService) : Controller
+    public class TelegramBotController(ITelegramService telegramService) : 
+        BaseController
     {
         [HttpGet]
         public async Task<ActionResult> getUser()

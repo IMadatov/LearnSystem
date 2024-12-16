@@ -74,7 +74,7 @@ public class TelegramService : ITelegramService
 
         using var outputStream = new MemoryStream();
 
-        var file = bot.GetInfoAndDownloadFileAsync(chat.Photo.BigFileId, outputStream).GetAwaiter().GetResult();
+        var file = await bot.GetInfoAndDownloadFileAsync(chat.Photo.BigFileId, outputStream);
 
         var array = outputStream.ToArray();
 
@@ -88,13 +88,13 @@ public class TelegramService : ITelegramService
     public async Task<ServiceResultBase<bool>> RefreshUserInfo()
     {
 
-        var userId = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+        var userId = httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)!.Value;
 
         if (userId == null)
             return new UnauthorizedServiceResult<bool>(false);
 
 
-        var user = await userManager.FindByIdAsync(userId);
+        var user = await _context.Users.Include(x=>x.StatusUser).FirstOrDefaultAsync(x => x.Id == Guid.Parse(userId));
 
         if (user == null)
             return new NotFoundServiceResult<bool>("user not found from db");
@@ -103,7 +103,7 @@ public class TelegramService : ITelegramService
 
         var chatId = new Telegram.Bot.Types.ChatId(userTelegramId);
 
-        var statusUser = await _context.StatusUsers.FirstOrDefaultAsync(x => x.Id == user.StatusUser.Id);
+        var statusUser = user.StatusUser;
 
         if (statusUser == null)
         {

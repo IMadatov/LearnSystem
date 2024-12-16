@@ -4,6 +4,7 @@ using LearnSystem.Models;
 using LearnSystem.Models.ModelsDTO;
 using LearnSystem.Services.IServices;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ServiceStatusResult;
 using System.Linq.Expressions;
@@ -18,6 +19,9 @@ namespace LearnSystem.Services
         IMapper mapper
         ) : ITeacherService
     {
+
+        
+
         public async Task<ServiceResultBase<bool>> CreateClass(ClassDto classDto)
         {
 
@@ -64,13 +68,17 @@ namespace LearnSystem.Services
 
         public async Task<ServiceResultBase<bool>> DeleteClasses(List<int> ids)
         {
-            var userId = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)!.Value;
+            var userId = httpContextAccessor.HttpContext!.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)!.Value;
 
             var user = await userManager.FindByIdAsync(userId);
 
+            if (user == null) {
+              return new UnauthorizedServiceResult<bool>(false);
+            }
+
             var deleteClassL = context.Classes.Where(x =>ids.Contains(x.Id));
 
-            var deleteClassList =await deleteClassL.Where(x => x.CreatedBy == user.Id.ToString()).ToListAsync();
+            var deleteClassList =await deleteClassL.Where(x => x.CreatedBy == user!.Id.ToString()).ToListAsync();
 
             context.Classes.RemoveRange(deleteClassList);
 
@@ -83,24 +91,37 @@ namespace LearnSystem.Services
 
             var UserId = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
 
-            createSubjectDto.UserId = UserId;
+            createSubjectDto.CreatedBy = UserId;
 
+
+
+            var user = await context.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == Guid.Parse(UserId));
+
+            if (user == null)
+            {
+                return new UnauthorizedServiceResult<bool>(false);
+            }
+
+
+
+            var teacher = await context.Teachers.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == user.Id);
+
+            if (teacher == null)
+            {
+                teacher = new Teacher { UserId = user.Id };
+                context.Teachers.Add(teacher);
+                await context.SaveChangesAsync();
+            }
             var subject = new Subject
             {
                 Name = createSubjectDto.Name,
-                User= new User { Id = Guid.Parse(UserId) }
             };
-
-            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == Guid.Parse(UserId));
-
-            var teacher = new Teacher { User = user! };
-
-            context.Teachers.Add(teacher);
 
             context.Add(subject);
 
             await context.SaveChangesAsync();
 
+            
             return new OkServiceResult<bool>(true);
         }
 
@@ -137,8 +158,12 @@ namespace LearnSystem.Services
                 var sql = query.ToQueryString();
             }
 
+            
+
             var allSubjects = query
-                .Select(subject => new SubjectDto(mapper.Map<SubjectDto>(subject), mapper.Map<UserDto>(subject.User)));
+                .Select(subject => new SubjectDto(mapper.Map<SubjectDto>(subject), mapper.Map<UserDto>(
+                    context.Users.AsNoTracking().FirstOrDefault(x => x.Id == Guid.Parse(subject.CreatedBy!))!)
+                    ));
 
             var allSql = allSubjects.ToQueryString();
 
@@ -184,10 +209,11 @@ namespace LearnSystem.Services
 
         public async Task<ServiceResultBase<bool>> DeleteSubjects(List<SubjectDto> subjectDtos)
         {
-            var userId = httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value;
+            var userId = httpContextAccessor.HttpContext!.User.Claims.First(x => x.Type == ClaimTypes.NameIdentifier).Value;
 
 
-            var filteredMySubject = subjectDtos.Where(x => x.UserId == userId);
+            var filteredMySubject = subjectDtos.Where(x => x.CreatedBy == userId);
+
             if (filteredMySubject.Count() == 0)
             {
                 return new OkServiceResult<bool>(false);

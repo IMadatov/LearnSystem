@@ -1,10 +1,17 @@
-﻿using LearnSystem.Services;
+﻿using BaseCrud.Abstractions.Entities;
+using BaseCrud.PrimeNg;
+using LearnSystem.DbContext;
+using LearnSystem.Models;
+using LearnSystem.Models.ModelsDTO;
+using LearnSystem.Services;
 using LearnSystem.Services.IServices;
+using LearnSystem.ServicesBaseCrud.IServiceBaseCrud;
 using LearnSystem.SignalR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using ServiceStatusResult;
 using System.Security.Claims;
 
@@ -14,7 +21,12 @@ namespace LearnSystem.Controllers
     [Authorize]
     public class UserController(
         IUserService userService,
-        IHubContext<LearnSystemSignalRHub, ISignalHubClient> hubContext
+        IHubContext<LearnSystemSignalRHub, ISignalHubClient> hubContext,
+        ITeacherBaseCrudService teacherBaseCrudService,
+        IStudentBaseCrudService studentBaseCrudService,
+        IUserBaseCrudService userBaseCrudService,
+        ILogger<UserController> logger,
+        ApplicationDbContext dbContext
         ) : BaseController
     {
 
@@ -23,14 +35,11 @@ namespace LearnSystem.Controllers
             await FromServiceResultBaseAsync(userService.Refresh());
 
         [HttpGet]
-        public async Task<ActionResult> Me()
+        public async Task<ActionResult<UserDto?>> Me()
         {
-            var user = HttpContext.User.ToString();
-            Console.WriteLine(user);
-
             var userId = HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            return await FromServiceResultBaseAsync(userService.Me(userId));
+            return await FromServiceResult(userBaseCrudService.GetByIdAsync(Guid.Parse(userId), UserProfile));
         }
 
         [HttpPost]
@@ -40,28 +49,48 @@ namespace LearnSystem.Controllers
             return Ok(true);
         }
 
-
-        [HttpGet]
+        [HttpPost]
         [Authorize(Roles = "admin")]
-        public async Task<ActionResult> GetAllUsers([FromQuery] int First, [FromQuery] int Rows) =>
-            await FromServiceResultBaseAsync(userService.GetUsers(First, Rows));
+        public async Task<ActionResult<QueryResult<UserDto>?>> GetAllUsers(PrimeTableMetaData primeTableMetaData) =>
+            await FromServiceResult(userBaseCrudService.GetAllAsync(primeTableMetaData, UserProfile));
 
-        [HttpGet]
-        [Authorize(Roles = "admin")]
-        public async Task<ActionResult> GetAdmins([FromQuery] int First, [FromQuery] int Rows) =>
-            await FromServiceResultBaseAsync(userService.GetAdmins(First, Rows));
 
-        [HttpGet]
+        [HttpPost]
         [Authorize(Roles = "admin, teacher")]
-        public async Task<ActionResult> GetTeachers([FromQuery] int First, [FromQuery] int Rows) =>
-            await FromServiceResultBaseAsync(userService.GetTeachers(First, Rows));
-
-        [HttpGet]
-        [Authorize(Roles = "admin,teacher")]
-        public async Task<ActionResult> GetStudents([FromQuery] int First, [FromQuery] int Rows) =>
-            await FromServiceResultBaseAsync(userService.GetStudents(First, Rows));
+        public async Task<ActionResult<QueryResult<TeacherDto>?>> GetTeachers(PrimeTableMetaData primeTableMetaData) =>
+            await FromServiceResult(teacherBaseCrudService.GetAllAsync(primeTableMetaData,UserProfile));
 
 
+        [HttpPost]
+        public async Task<ActionResult<QueryResult<StudentDto>?>> GetStudents(PrimeTableMetaData primeTableMetaData) =>
+            await FromServiceResult(studentBaseCrudService.GetAllAsync(primeTableMetaData, UserProfile, context =>
+            {
+                var queryable = context.Queryable.Where(s => dbContext.Users.Any(u => u.Id == s.UserId));
+
+                return ValueTask.FromResult(queryable);
+            }));
+
+        [HttpPost]
+        public async Task<ActionResult<QueryResult<UserDto>?>> GetTeacherUsers(PrimeTableMetaData primeTableMetaData)
+             => await FromServiceResult(userBaseCrudService.GetAllAsync(primeTableMetaData, UserProfile, context =>
+             {
+                 var queryable = context.Queryable.Where(u => dbContext.Teachers.Any(t => t.UserId == u.Id && u.Active));
+
+                 var queryString = queryable.ToQueryString();
+
+                 logger.LogInformation(queryString);
+
+                 return ValueTask.FromResult(queryable);
+             }));
+
+        [HttpPost]
+        public async Task<ActionResult<QueryResult<UserDto>?>> GetAdmins(PrimeTableMetaData primeTableMetaData)
+            => await FromServiceResult(userBaseCrudService.GetAllAsync(primeTableMetaData, UserProfile, context =>
+            {
+                var queryable = context.Queryable.Where(u => dbContext.UserRoles.Any(ur=>ur.UserId==u.Id &&  ur.RoleId==dbContext.Roles.FirstOrDefault(r=>r.NormalizedName=="ADMIN")!.Id));
+
+                return ValueTask.FromResult(queryable);
+            }));
         protected async Task<ActionResult> FromServiceResultBaseAsync<T>(Task<ServiceResultBase<T>> task)
         {
             var result = await task;

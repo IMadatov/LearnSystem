@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LearnSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241111072347_Init")]
-    partial class Init
+    [Migration("20241212093531_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -325,9 +325,6 @@ namespace LearnSystem.Migrations
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("AtCreate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -343,12 +340,7 @@ namespace LearnSystem.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Subjects");
                 });
@@ -705,15 +697,6 @@ namespace LearnSystem.Migrations
                     b.Navigation("Lesson");
 
                     b.Navigation("Student");
-                });
-
-            modelBuilder.Entity("LearnSystem.Models.Subject", b =>
-                {
-                    b.HasOne("LearnSystem.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LearnSystem.Models.Teacher", b =>

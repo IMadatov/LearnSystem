@@ -62,5 +62,5 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         base.OnModelCreating(builder);
     }
-    
+
 }

@@ -73,18 +73,19 @@ namespace LearnSystem.Controllers
         /// <summary>
         /// The User definition of current scope
         /// </summary>
-        protected IUserProfile? UserProfile
+        protected IUserProfile<Guid>? UserProfile
         {
             get
             {
                 string? identifier = User.FindFirstValue(ClaimTypes.Name);
-
+                var userId=User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (identifier == null)
                     return null;
 
                 return new UserProfile
                 {
-                    Fullname = identifier
+                    Fullname = identifier,
+                    Id = Guid.Parse(userId)
                 };
             }
         }

@@ -1,6 +1,8 @@
-﻿namespace LearnSystem.Models.ModelsDTO;
+﻿using BaseCrud.Entities;
 
-public class SubjectDto
+namespace LearnSystem.Models.ModelsDTO;
+
+public class SubjectDto:IDataTransferObject<Subject>
 {
     public SubjectDto() { }
 
@@ -8,18 +10,26 @@ public class SubjectDto
     {
         Id = subject.Id;
         Name = subject.Name;
-        AtCreate = subject.AtCreate;
-        UserId = subject.UserId;
+        CraetedDate = subject.CraetedDate;
+        CreatedBy = subject.CreatedBy;
         User = userDto;
     }
     public int? Id { get; set; }
 
     public string? Name { get; set; }
 
-    public DateTime? AtCreate { get; set; } = DateTime.Now;
+    public DateTime? CraetedDate { get; set; } = DateTime.Now;
 
-    public string? UserId { get; set; }
+    public string? CreatedBy { get; set; }
 
     public UserDto? User { get; set; }
-}
+        
+    public string Creator { get
+        {
+            return User!=null?User.UserName:"";
+        } }
+} 
+
+
+
 

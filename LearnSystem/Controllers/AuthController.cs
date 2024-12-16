@@ -9,9 +9,7 @@ namespace LearnSystem.Controllers
 {
 
     [AllowAnonymous]
-    [ApiController]
-    [Route("api/[controller]/[action]")]
-    public class AuthController(IAuthService authService) : ControllerBase
+    public class AuthController(IAuthService authService) : BaseController
     {
 
         [HttpPost]
@@ -23,10 +21,9 @@ namespace LearnSystem.Controllers
             await FromServiceResultBaseAsync(authService.SignOutAsync());
 
         [HttpPost]
-        public async Task<ActionResult> SignInAsync(SignInDto signInDto) { 
-            await Task.Delay(1000);
-            return await FromServiceResultBaseAsync(authService.SignInAsync(signInDto));
-        }
+        public async Task<ActionResult> SignInAsync(SignInDto signInDto) 
+            => await FromServiceResultBaseAsync(authService.SignInAsync(signInDto));
+        
 
         [HttpGet]
         public async Task<ActionResult> OnSite()
@@ -34,10 +31,8 @@ namespace LearnSystem.Controllers
 
         [HttpPost]
         public async Task<ActionResult> SignUpWithTelegram(UserTeleramDTO userTelegram, string telegramData)
-        {
-            var token = HttpContext.User.Claims.ToList();
-            return await FromServiceResultBaseAsync(authService.SignUpWithTelegram(userTelegram, telegramData));
-        }
+            =>await FromServiceResultBaseAsync(authService.SignUpWithTelegram(userTelegram, telegramData));
+        
 
 
         [HttpPost]
@@ -54,9 +49,7 @@ namespace LearnSystem.Controllers
             => await FromServiceResultBaseAsync(authService.CheckTelegramData(telegramData));
 
 
-        [HttpGet]
-        public async Task<ActionResult> ServerTime() =>
-            Ok(DateTime.Now);
+        
         protected async Task<ActionResult> FromServiceResultBaseAsync<T>(Task<ServiceResultBase<T>> task)
         {
             var result = await task;

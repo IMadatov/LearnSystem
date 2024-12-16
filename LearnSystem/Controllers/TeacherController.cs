@@ -1,22 +1,31 @@
-﻿using LearnSystem.Models.ModelsDTO;
+﻿using BaseCrud.Abstractions.Entities;
+using BaseCrud.PrimeNg;
+using LearnSystem.Models.ModelsDTO;
 using LearnSystem.Services.IServices;
+using LearnSystem.ServicesBaseCrud.IServiceBaseCrud;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ServiceStatusResult;
 
 namespace LearnSystem.Controllers
 {
 
-    [ApiController]
-    [Route("api/[controller]/[action]")]
-    [Authorize(Roles ="teacher")]
-    public class TeacherController(ITeacherService teacherService):ControllerBase
+    
+
+    [Authorize(Roles ="teacher, admin")]
+    public class TeacherController(
+        ITeacherService teacherService,
+        ITeacherBaseCrudService teacherBaseCrudService,
+        ISubjectBaseCrudService subjectBaseCrudService,
+        IClassBaseCrudService classBaseCrudService
+        ):BaseController
     {
        
 
-        [HttpGet]
-        public async Task<ActionResult> GetSubjects([FromQuery] int first = 0, [FromQuery] int row = 10, [FromQuery]string field = "Name", [FromQuery]short order=1) =>
-            await FromServiceResultBaseAsync(teacherService.GetSubjects(first, row,field,order));
+        [HttpPost]
+        public async Task<ActionResult<QueryResult<SubjectDto>?>>GetSubjects(PrimeTableMetaData primeTableMetaData) =>
+            await FromServiceResult(subjectBaseCrudService.GetAllAsync(primeTableMetaData,UserProfile));
 
         [HttpPost]
         public async Task<ActionResult> CreateSubject(SubjectDto createSubjectDto) =>
@@ -27,12 +36,12 @@ namespace LearnSystem.Controllers
             await FromServiceResultBaseAsync(teacherService.DeleteSubjects(subjectDtos));
 
         [HttpPost]
-        public async Task<ActionResult> CreateClass(ClassDto classDto)=>
-            await FromServiceResultBaseAsync(teacherService.CreateClass(classDto));
+        public async Task<ActionResult<ClassFullDto?>> CreateClass(ClassFullDto classDto)=>
+            await FromServiceResult(classBaseCrudService.InsertAsync(classDto,UserProfile));
 
-        [HttpGet]
-        public async Task<ActionResult> GetAllClass([FromQuery] int first = 0, [FromQuery] int row = 10, [FromQuery] string field = "Name", [FromQuery] short order = 1) =>
-           await FromServiceResultBaseAsync(teacherService.GetAllClass(first,row,field,order));
+        [HttpPost]
+        public async Task<ActionResult<QueryResult<ClassDto>?>> GetAllClass(PrimeTableMetaData primeTableMetaData) =>
+           await FromServiceResult(classBaseCrudService.GetAllAsync(primeTableMetaData, UserProfile));
 
         [HttpDelete]
         public async Task<ActionResult> DeleteClasses([FromBody]List<int> classDtos)=>

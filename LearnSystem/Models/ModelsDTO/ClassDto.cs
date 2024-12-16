@@ -1,6 +1,8 @@
-﻿namespace LearnSystem.Models.ModelsDTO
+﻿using BaseCrud.Entities;
+
+namespace LearnSystem.Models.ModelsDTO
 {
-    public class ClassDto
+    public class ClassDto:IDataTransferObject<Class>
     {
         public int? Id { get; set; }
 
@@ -8,6 +10,8 @@
 
         public string? Name { get; set; } = string.Empty;
         
-        public UserDto? CreatorUser { get; set; }
+        public string? Creator { get; set; }
+
+        public string? CreatedBy { set; get; }
     }
 }

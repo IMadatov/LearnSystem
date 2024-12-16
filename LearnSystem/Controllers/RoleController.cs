@@ -7,10 +7,8 @@ using System.Security.Claims;
 
 namespace LearnSystem.Controllers;
 
-[ApiController]
-[Route("api/[controller]/[action]")]
 [Authorize]
-public class RoleController(IRoleService roleService) : ControllerBase
+public class RoleController(IRoleService roleService) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> MyRoles()
@@ -20,6 +18,8 @@ public class RoleController(IRoleService roleService) : ControllerBase
         return await FromServiceResultBaseAsync(roleService.MyRoles(id));
     }
 
+
+    [AllowAnonymous]
     [HttpPost]
     public async Task<ActionResult> AddRole(string roleName)
     {

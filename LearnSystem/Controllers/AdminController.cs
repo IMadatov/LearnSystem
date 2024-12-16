@@ -7,9 +7,7 @@ using ServiceStatusResult;
 namespace LearnSystem.Controllers
 {
     [Authorize(Roles ="admin")]
-    [ApiController]
-    [Route("api/[controller]/[action]")]
-    public class AdminController(IAdminService adminService) : ControllerBase
+    public class AdminController(IAdminService adminService) : BaseController
     {
         [HttpPut]
         public async Task<ActionResult> UpdateRole(ChangeRoleUserDto changeRoleUserDto)
